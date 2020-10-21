@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<worksheet xmlns="http://schemas.mathsoft.com/worksheet50" xmlns:ml="http://schemas.mathsoft.com/math50" xmlns:p="http://schemas.mathsoft.com/provenance10" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:u="http://schemas.mathsoft.com/units10" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:ws="http://schemas.mathsoft.com/worksheet50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <regions>
+        <region region-id="0" width="200" actualWidth="200" actualHeight="21.313333333333333" top="19.200000000000003" left="0">
+            <text item-idref="Re52c0e5d97284809">
+                <FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" FontFamily="Tahoma" FontStyle="Normal" FontWeight="Normal" FontSize="16" Foreground="#FF000000" Background="#00FFFFFF" TextAlignment="Left" Typography.Variants="Normal" />
+            </text>
+        </region>
+        <region region-id="1" width="260" actualWidth="260" actualHeight="34.186666666666667" top="57.600000000000009" left="19.200000000000003">
+            <text item-idref="R252fd7236a0042f6">
+                <FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" FontFamily="Tahoma" FontStyle="Italic" FontWeight="Normal" FontSize="13.3333333333333" Foreground="#FF000000" Background="#00FFFFFF" TextAlignment="Left" Typography.Variants="Normal" />
+            </text>
+        </region>
+        <region region-id="2" width="624" actualWidth="624" actualHeight="19.703333333333333" top="96.000000000000014" left="0">
+            <text item-idref="R5d15219fe42c4d15" is-text-block="true">
+                <FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" FontFamily="Tahoma" FontStyle="Normal" FontWeight="Normal" FontSize="14.6666666666667" Foreground="#FF000000" Background="#00FFFFFF" TextAlignment="Left" Typography.Variants="Normal" />
+            </text>
+        </region>
+        <region region-id="3" actualWidth="121.76666666666668" actualHeight="25.6" top="153.60000000000002" left="0">
+            <math resultRef="0">
+                <ml:define>
+                    <ml:id labels="VARIABLE" xml:space="preserve">Some_Maths</ml:id>
+                    <ml:real>1</ml:real>
+                </ml:define>
+            </math>
+        </region>
+        <region region-id="4" width="254.54545454545456" actualWidth="254.54545454545456" actualHeight="19.703333333333333" top="211.20000000000005" left="38.400000000000006">
+            <text item-idref="R7e0e6a1e01be4662">
+                <FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" FontFamily="Tahoma" FontStyle="Normal" FontWeight="Normal" FontSize="14.6666666666667" Foreground="#FF000000" Background="#00FFFFFF" TextAlignment="Left" Typography.Variants="Normal" />
+            </text>
+        </region>
+        <region region-id="5" actualWidth="248" actualHeight="52" top="230.40000000000003" left="38.400000000000006">
+            <picture>
+                <png item-idref="R65fd2d8670f84a62" />
+            </picture>
+        </region>
+    </regions>
+</worksheet>
