@@ -10,5 +10,5 @@ Mathcad Prime
 comtypes (https://github.com/enthought/comtypes)
 """
 
-
+from __application.py import *
 

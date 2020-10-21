@@ -20,8 +20,10 @@ import numpy as np
 
 print(comtypes.gen)
 
-class Mathcad(object):
+
+class Mathcad():
     """ Mathcad application object """
+
     def __init__(self, visible=False):
         print("Loading Mathcad")
         try:
@@ -43,8 +45,7 @@ class Mathcad(object):
         name = self.__mcadapp.ActiveWorksheet.Name
         if name == "":
             return None  # Returns none if the current worksheet not saved
-        else:
-            return name
+        return name
 
     def worksheet_names(self):
         """ lists worksheets open in the Mathcad instance """
@@ -71,7 +72,8 @@ class Mathcad(object):
         else:
             print("incorrect save argument specified")
 
-class Worksheet(object):
+
+class Worksheet():
     """ Mathcad Worksheet object
 
     Either a filepath for a mathcad file can be supplied, or the
@@ -138,13 +140,10 @@ class Worksheet(object):
                 return True
             else:
                 raise ValueError("the argument for new_filepath is invalid")
-                return False
         except TypeError:
             raise TypeError("new_filepath must be a string")
-            return False
         except:
             print("COM error saving new version")
-            return False
 
     def name(self):
         """ Returns the filename of the Worksheet object """
@@ -158,7 +157,7 @@ class Worksheet(object):
         """ Returns (and can optionally set) the worksheets modified status """
         if setmodfied is True:  # If readonly has been set to True
             self.__obj.Modified = True
-        elif setmodfied is False: # If readonly has been set to False
+        elif setmodfied is False:  # If readonly has been set to False
             self.__obj.Modified = False
         return self.__obj.Modified  # Always return state
 
@@ -187,7 +186,6 @@ class Worksheet(object):
         else:
             raise ValueError(f"{input_alias} is not a designated input field" +
                              f"\n\nAvailable Input fields:\n{self.inputs()}")
-            return False
 
     def outputs(self):
         """ returns a list of the designated output fields in the worksheet """
@@ -298,10 +296,8 @@ class Matrix(object):
             return True
         except ValueError:
             raise ValueError("Matrix dimensions must be integers")
-            return False
         except:
             raise Exception("COM Error creating Mathcad matrix")
-            return False
 
     def set_element(self, row_index, column_index, value):
         """ Sets the value of an element in the Matrix """
@@ -348,10 +344,8 @@ if __name__ == "__main__":
     MC = Mathcad(visible=True) # Open Mathcad with no GUI
     WS = Worksheet(TEST)
     WS = Worksheet(None, "test")
-    a = WS.set_real_input("in_test", 2, "mm")
+    a = WS.set_real_input("in_test", 5, "mm")
     print(a)
     matrix, units, error = WS.get_matrix_output("out_999")
     print(error)
-    matrix.
-
-
+    #matrix.
