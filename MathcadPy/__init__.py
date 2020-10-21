@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-MathcadPy __innit__.py
+MathcadPy __init__.py
 
 Author: MattWoodhead
 
 Requirements:
 
-Mathcad Prime
-comtypes (https://github.com/enthought/comtypes)
+Mathcad Prime (https://www.mathcad.com)
+PyWin32 (https://github.com/mhammond/pywin32)
 """
 
-from __application_comtypes.py import *
+__author__ = "MattWoodhead"
+__version__ = "0.1.A"
 
+from __application_win32com.py import *

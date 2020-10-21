@@ -1,4 +1,6 @@
-
+*.stats
+*.pyc
 *.lnk
 Test/~$MathcadInterface.xlsm
 .pylint.d
+__pycache__
