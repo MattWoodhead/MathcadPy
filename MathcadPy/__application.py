@@ -1,24 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-MathcadPy
-|
-|- Application.py
+MathcadPy __application_win32com.py
 
 Author: MattWoodhead
-
-Requirements:
-
-Mathcad Prime
-comtypes (https://github.com/enthought/comtypes)
 
 """
 
 import os
-import comtypes.client as CC
-import comtypes
+import win32com.client as w32c
 import numpy as np
-
-print(comtypes.gen)
 
 
 class Mathcad():
@@ -27,7 +17,7 @@ class Mathcad():
     def __init__(self, visible=False):
         print("Loading Mathcad")
         try:
-            self.__mcadapp = CC.CreateObject("MathcadPrime.Application")
+            self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
             self.version = self.__mcadapp.GetVersion()  # Fetches Mathcad version
             if visible is False:
                 self.__mcadapp.Visible = False
@@ -82,7 +72,7 @@ class Worksheet():
     """
 
     def __init__(self, filepath, open_sheet_name=None):
-        self.__mcadapp = CC.CreateObject("MathcadPrime.Application")
+        self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
         self.__ws_at_init = {}
         for i in range(self.__mcadapp.Worksheets.Count):
             self.__ws_at_init[self.__mcadapp.Worksheets.Item(i).Name] = \
@@ -276,16 +266,17 @@ class Worksheet():
         self.__obj.Synchronize()
 
 
-class Matrix(object):
+class Matrix():
     """ Mathcad Matrix object container """
     def __init__(self, python_name=""):
-        self.__mcadapp = CC.CreateObject("MathcadPrime.Application")
+        self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
         for i in range(self.__mcadapp.Worksheets.Count):
             if self.__mcadapp.Worksheets.Item(i).Name == self.__mcadapp.ActiveWorksheet.Name:
                 self.__ws = self.__mcadapp.Worksheets.Item(i)  # Returns IMathcadPrimeWorksheet2 object
                 break
         self.python_name = python_name  # Just for organisation in scripts
         self.object = None
+        self.shape = None
 
     def create_matrix(self, rows, columns):
         """ Creates a Mathcad matrix """
@@ -344,8 +335,8 @@ if __name__ == "__main__":
     MC = Mathcad(visible=True) # Open Mathcad with no GUI
     WS = Worksheet(TEST)
     WS = Worksheet(None, "test")
-    a = WS.set_real_input("in_test", 5, "mm")
+    a = WS.set_real_input("in_test", 9, "mm")
     print(a)
     matrix, units, error = WS.get_matrix_output("out_999")
-    print(error)
+    print(matrix)
     #matrix.

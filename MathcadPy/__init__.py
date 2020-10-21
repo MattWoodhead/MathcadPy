@@ -13,4 +13,4 @@ PyWin32 (https://github.com/mhammond/pywin32)
 __author__ = "MattWoodhead"
 __version__ = "0.1.A"
 
-from __application_win32com.py import *
+from __application import *
