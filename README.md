@@ -2,9 +2,8 @@
 A Python wrapper for the Mathcad Prime automation API
 
 ### Requirements
-Mathcad Prime 3+
-
-comtypes (https://github.com/enthought/comtypes)
+[Mathcad Prime 3+](https://www.mathcad.com/)
+[win32com](https://github.com/mhammond/pywin32)
 
 ### Features
 (TODO)
