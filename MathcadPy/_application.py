@@ -60,7 +60,7 @@ class Mathcad():
             worksheets.append(self.__mcadapp.Worksheets.Item(i).FullName)
         return worksheets  # Returns a list of open worksheet filenames
 
-    def open_worksheet(self, filepath: Path):
+    def open(self, filepath: Path):
         """ Opens the filepath (if valid) in Mathcad """
         try:
             if not isinstance(filepath, Path):
@@ -175,8 +175,7 @@ class Worksheet():
             getinput = self.ws_object.InputGetRealValue(input_alias)
             return getinput.RealResult, getinput.Units, getinput.ErrorCode
         else:
-            raise ValueError(f"{input_alias} is not a designated input field" +
-                             f"\n\nAvailable Input fields:\n{self.inputs()}")
+            raise ValueError(f"{input_alias} is not a designated input field")
 
     def outputs(self):
         """ returns a list of the designated output fields in the worksheet """
@@ -186,20 +185,21 @@ class Worksheet():
         return _outputs  # Returns a list of open worksheet filenames
 
     def get_real_output(self, output_alias, units="Default"):
+        """  """
         try:
             output_alias = str(output_alias)
             units = str(units)
             if output_alias in self.outputs():
                 try:
                     if units == "Default":
-                        self.ws_object.OutputGetRealValue(output_alias)
+                        result = self.ws_object.OutputGetRealValue(output_alias)
                     else:
-                        self.ws_object.OutputGetRealValueAs(output_alias, units)
+                        result = self.ws_object.OutputGetRealValueAs(output_alias, units)
+                    return result.RealResult, result.Units, result.ErrorCode
                 except:
                     print("COM Error fetching real_output")
             else:
-                raise ValueError(f"{output_alias} is not a designated output field" +
-                                 f"\n\nAvailable Output fields:\n{self.outputs()}")
+                raise ValueError(f"{output_alias} is not a designated output field")
         except TypeError:
             raise TypeError("Arguments must be strings")
 
@@ -217,8 +217,7 @@ class Worksheet():
                 except:
                     print("COM Error fetching real_output")
             else:
-                raise ValueError(f"{output_alias} is not a designated output field" +
-                                 f"\n\nAvailable Output fields:\n{self.outputs()}")
+                raise ValueError(f"{output_alias} is not a designated output field")
         except TypeError:
             raise TypeError("Arguments must be strings")
 
@@ -229,8 +228,7 @@ class Worksheet():
             error = self.ws_object.SetRealValue(str(input_alias), value, str(units))
             # COM command returns error count. 0 = everything set correctly
         else:
-            raise ValueError(f"{input_alias} is not a designated input field" +
-                             f"\n\nAvailable Input fields:\n{self.inputs()}")
+            raise ValueError(f"{input_alias} is not a designated input field")
         if error > 0:
             print(f"\nWarning!\nerror setting '{input_alias}' value/units\n")
         return error
