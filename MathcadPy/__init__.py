@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-MathcadPy __init__.py
+__init__.py
+~~~~~~~~~~~~~~
+MathcadPy
 
-Author: MattWoodhead
+Copyright 2020 Matt Woodhead
 
 Requirements:
 
@@ -10,7 +12,8 @@ Mathcad Prime (https://www.mathcad.com)
 PyWin32 (https://github.com/mhammond/pywin32)
 """
 
-__author__ = "MattWoodhead"
-__version__ = "0.1.A"
+from ._application import *
+from . import __version__
 
-from __application import *
+__author__ = __version__.__author__
+__version__ = __version__.__version__
