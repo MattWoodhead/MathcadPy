@@ -4,3 +4,6 @@
 Test/~$MathcadInterface.xlsm
 .pylint.d
 __pycache__
+build
+dist
+MathcadPy.egg-info

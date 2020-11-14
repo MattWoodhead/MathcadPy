@@ -10,7 +10,7 @@ from setuptools import setup
 
 # get key package details from MathcadPy/__version__.py
 about = {}  # type: ignore
-here = Path(__file__).parent()
+here = Path(__file__).parent
 with open(here / 'MathcadPy' / '__version__.py') as f:
     exec(f.read(), about)
 
