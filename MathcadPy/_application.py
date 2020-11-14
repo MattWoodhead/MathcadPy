@@ -215,8 +215,10 @@ class Worksheet():
             try:
                 if units == "Default":
                     result = self.ws_object.OutputGetRealValue(output_alias)
+                    return result.RealResult, result.Units, result.ErrorCode
                 else:
                     result = self.ws_object.OutputGetRealValueAs(output_alias, units)
+                    return result.RealResult, units, result.ErrorCode
                 return result.RealResult, result.Units, result.ErrorCode
             except:
                 print("COM Error fetching real_output")  # TODO - replace with raised exception

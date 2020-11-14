@@ -46,6 +46,9 @@ test_ws.set_matrix_input("matrix_input_test", matrix_to_send, "s", preserve_work
 # Fetch some output values
 value, units, error_code = test_ws.get_real_output("real_output_test")
 print(value, units)
+value, units, error_code = test_ws.get_real_output("real_output_test", units="in")  # get the previous result, but this time in inches
+if error_code == 0:  # Good practice to check for errors when you request specific units
+    print(value, units)
 
 matrix, units, error = test_ws.get_matrix_output("matrix_output_test")
 print(matrix, units)
