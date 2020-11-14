@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 21 21:17:05 2020
-
-@author: matth
+examples.py
+~~~~~~~~~~~~~~
+MathcadPy
+Copyright 2020 Matt Woodhead
 """
 
 from pprint import pprint

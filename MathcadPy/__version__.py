@@ -2,7 +2,9 @@
 """
 __version__.py
 ~~~~~~~~~~~~~~
+MathcadPy
 Information about the current version of the MathcadPy package.
+Copyright 2020 Matt Woodhead
 """
 
 __title__ = 'MathcadPy'

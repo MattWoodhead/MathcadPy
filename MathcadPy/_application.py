@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-MathcadPy __application_win32com.py
-
-Author: MattWoodhead
-
+_application.py
+~~~~~~~~~~~~~~
+MathcadPy
+Copyright 2020 Matt Woodhead
 """
 
 from pathlib import Path

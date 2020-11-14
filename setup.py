@@ -3,6 +3,7 @@
 setup.py
 ~~~~~~~~~~~~~~
 MathcadPy
+Copyright 2020 Matt Woodhead
 """
 
 from pathlib import Path
