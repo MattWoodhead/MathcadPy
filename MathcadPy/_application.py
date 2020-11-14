@@ -62,8 +62,7 @@ class Mathcad():
     def open(self, filepath: Path):
         """ Opens the filepath (if valid) in Mathcad """
         try:
-            if not isinstance(filepath, Path):
-                filepath = Path(filepath)
+            filepath = Path(filepath)
             if filepath.exists() and (filepath.suffix.lower() == ".mcdx"):
                 local_obj = self.__mcadapp.Open(str(filepath))
                 # now we have opened a new worksheet, generate the list of open worksheets from the COM API
@@ -80,7 +79,7 @@ class Mathcad():
 
     def close_all(self, save_option="Discard"):
         """ Closes all worksheets. Can specify save options before closing """
-        if save_option in ["Discard", 2]:
+        if save_option in ["Discard", 2]:  # check for both "Discard" and its COM api equivalent code
             self.__mcadapp.CloseAll(2)
         elif save_option in ["Prompt", 1]:
             self.__mcadapp.CloseAll(1)
