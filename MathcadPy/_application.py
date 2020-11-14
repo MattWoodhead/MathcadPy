@@ -8,7 +8,6 @@ Author: MattWoodhead
 
 from pathlib import Path
 import win32com.client as w32c
-import numpy as np
 
 
 class Mathcad():
@@ -111,7 +110,7 @@ class Worksheet():
         """ activates the worksheet object """
         self.ws_object.Activate()
 
-    def Close(self, save_option="Save"):
+    def close(self, save_option="Save"):
         """ Closes the worksheet """
         if save_option in ["Discard", 2]:
             self.ws_object.Close(2)
@@ -122,19 +121,23 @@ class Worksheet():
         else:
             print("incorrect save argument specified")
 
+    def save(self):
+        """ Saves the worksheet """
+        self.ws_object.Save()
+
     def save_as(self, new_filepath: Path):
         """ Saves the worksheet under a new filename """
         try:
-            new_filepath = Path(new_filepath)
-            if new_filepath.is_file():
+            new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
+            if new_filepath.suffix == ".mcdx":
                 self.ws_object.SaveAs(new_filepath)
                 return True
+                print(f"Worksheet saved as: {new_filepath}")
             else:
-                raise ValueError("new_filepath must be a file name, not a directory")
-        except TypeError:
-            raise TypeError("new_filepath must be a String or Pathlib object")
+                raise ValueError("Filename must include file extension '.mcdx'")
         except:
             print("COM error saving new version")
+        return False
 
     def name(self):
         """ Returns the filename of the Worksheet object """
@@ -144,12 +147,10 @@ class Worksheet():
         """ Returns the worksheets read only status """
         return self.ws_object.IsReadOnly  # Always return state
 
-    def modified(self, setmodfied=None):
+    def is_modified(self, setmodfied=None):
         """ Returns (and can optionally set) the worksheets modified status """
         if setmodfied is True:  # If readonly has been set to True
             self.ws_object.Modified = True
-        elif setmodfied is False:  # If readonly has been set to False
-            self.ws_object.Modified = False
         return self.ws_object.Modified  # Always return state
 
     # ~~~~~~~~~~~~~~~~~~~~~ Worksheet Operations ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,15 +168,37 @@ class Worksheet():
         _inputs = []
         for i in range(self.ws_object.Inputs.Count):  # no. of open sheets
             _inputs.append(self.ws_object.Inputs.GetAliasByIndex(i))
-        return _inputs  # Returns a list of open worksheet filenames
+        return _inputs
 
-    def get_input(self, input_alias):
+    def get_input(self, input_alias):  # TODO possibly rename this to get_real_input to match COM? Check behaviour on string inputs
         """ Fetches the curent value of a specific input """
         if input_alias in self.inputs():
             getinput = self.ws_object.InputGetRealValue(input_alias)
             return getinput.RealResult, getinput.Units, getinput.ErrorCode
         else:
             raise ValueError(f"{input_alias} is not a designated input field")
+
+    def _get_real_input_units(self, input_alias):
+        """
+        Fetches the units of a specific matrix input. This is an internal function and no input
+        sanitisation checks are performed
+        """
+        return self.ws_object.InputGetRealValue(input_alias).Units
+
+    def get_matrix_input(self, input_alias):
+        """ Fetches the curent value of a specific input """
+        if input_alias in self.inputs():
+            getinput = self.ws_object.InputGetMatrixValue(input_alias)
+            return _matrix_to_array(getinput.RealResult), getinput.Units, getinput.ErrorCode
+        else:
+            raise ValueError(f"{input_alias} is not a designated input field")
+
+    def _get_matrix_input_units(self, input_alias):
+        """
+        Fetches the units of a specific matrix input. This is an internal function and no input
+        sanitisation checks are performed
+        """
+        return self.ws_object.InputGetMatrixValue(input_alias).Units
 
     def outputs(self):
         """ returns a list of the designated output fields in the worksheet """
@@ -185,47 +208,53 @@ class Worksheet():
         return _outputs  # Returns a list of open worksheet filenames
 
     def get_real_output(self, output_alias, units="Default"):
-        """  """
-        try:
-            output_alias = str(output_alias)
-            units = str(units)
-            if output_alias in self.outputs():
-                try:
-                    if units == "Default":
-                        result = self.ws_object.OutputGetRealValue(output_alias)
-                    else:
-                        result = self.ws_object.OutputGetRealValueAs(output_alias, units)
-                    return result.RealResult, result.Units, result.ErrorCode
-                except:
-                    print("COM Error fetching real_output")
-            else:
-                raise ValueError(f"{output_alias} is not a designated output field")
-        except TypeError:
-            raise TypeError("Arguments must be strings")
+        """ Gets the numerical value from a designated output in the worksheet """
+        assert isinstance(output_alias, str)
+        assert isinstance(units, str)
+        if output_alias in self.outputs():
+            try:
+                if units == "Default":
+                    result = self.ws_object.OutputGetRealValue(output_alias)
+                else:
+                    result = self.ws_object.OutputGetRealValueAs(output_alias, units)
+                return result.RealResult, result.Units, result.ErrorCode
+            except:
+                print("COM Error fetching real_output")  # TODO - replace with raised exception
+        else:
+            raise ValueError(f"{output_alias} is not a designated output field")
 
     def get_matrix_output(self, output_alias, units="Default"):
-        try:
-            output_alias = str(output_alias)
-            units = str(units)
-            if output_alias in self.outputs():
-                try:
-                    if units == "Default":
-                        result = self.ws_object.OutputGetMatrixValue(output_alias)
-                    else:
-                        result = self.ws_object.OutputGetMatrixValueAs(output_alias, units)
-                    return result.MatrixResult, result.Units, result.ErrorCode
-                except:
-                    print("COM Error fetching real_output")
-            else:
-                raise ValueError(f"{output_alias} is not a designated output field")
-        except TypeError:
-            raise TypeError("Arguments must be strings")
+        """ Gets the numerical value from a designated output in the worksheet """
+        assert isinstance(output_alias, str)
+        assert isinstance(units, str)
+        if output_alias in self.outputs():
+            try:
+                if units == "Default":
+                    result = self.ws_object.OutputGetMatrixValue(output_alias)
+                else:
+                    result = self.ws_object.OutputGetMatrixValueAs(output_alias, units)
+                return _matrix_to_array(result.MatrixResult), result.Units, result.ErrorCode
+            except:
+                print("COM Error fetching real_output")  # TODO - replace with raised exception
+        else:
+            raise ValueError(f"{output_alias} is not a designated output field")
 
-
-    def set_real_input(self, input_alias, value, units=""):
+    def set_real_input(self, input_alias, value, units="", preserve_worksheet_units=True):
         """ Set the value of a numerical input range in the worksheet """
+        assert isinstance(input_alias, str)
+        assert isinstance(units, str)
+        assert isinstance(preserve_worksheet_units, bool)
         if input_alias in self.inputs():  # Use inputs function to get list
-            error = self.ws_object.SetRealValue(str(input_alias), value, str(units))
+            if preserve_worksheet_units:
+                previous_units = self._get_real_input_units(input_alias)
+                if units:  # If units is not equal to ""
+                    try:
+                        assert units == previous_units
+                    except AssertionError:
+                        raise AssertionError("preserve_worksheet_units is True. The units argument does not equate to the units present in the Worksheet")
+                else:  # No units are specified, but preserve_worksheet_units is True
+                    units = previous_units
+            error = self.ws_object.SetRealValue(input_alias, value, units)
             # COM command returns error count. 0 = everything set correctly
         else:
             raise ValueError(f"{input_alias} is not a designated input field")
@@ -233,94 +262,91 @@ class Worksheet():
             print(f"\nWarning!\nerror setting '{input_alias}' value/units\n")
         return error
 
-    def set_string_input(self, input_alias, string):
+    def set_string_input(self, input_alias, string_value):
         """ Set the value of a numerical input range in the worksheet """
+        assert isinstance(input_alias, str)
+        assert isinstance(string_value, str)
         if input_alias in self.inputs():  # Use inputs function to get list
-            error = self.ws_object.SetStringValue(str(input_alias), str(string))
+            error = self.ws_object.SetStringValue(input_alias, string_value)
             # COM command returns error count. 0 = everything set correctly
         else:
-            raise ValueError(f"{input_alias} is not a designated input field" +
-                             f"\n\nAvailable Input fields:\n{self.inputs()}")
+            raise ValueError(f"{input_alias} is not a designated input field")
         if error > 0:
             print(f"\nWarning!\nerror setting '{input_alias}' value/units\n")
         return error
 
-    def set_matrix_input(self, input_alias, matrix_object, units=""):
+    def set_matrix_input(self, input_alias, matrix_array, units="", preserve_worksheet_units=True):
         """ Set the value of a numerical input range in the worksheet """
-        if input_alias in self.inputs():  # Use inputs function to get list
-            error = self.ws_object.SetRealValue(str(input_alias),
-                                                matrix_object, str(units))
-            # COM command returns error count. 0 = everything set correctly
+        assert isinstance(input_alias, str)
+        assert isinstance(units, str)
+        assert isinstance(preserve_worksheet_units, bool)
+        if input_alias in self.inputs():  # Check that the alias specified exists in the worksheet
+            if preserve_worksheet_units:
+                previous_units = self._get_matrix_input_units(input_alias)
+                if units:  # If units is not equal to ""
+                    try:
+                        assert units == previous_units
+                    except AssertionError:
+                        raise AssertionError("preserve_worksheet_units is True. The units argument does not equate to the units present in the Worksheet")
+                else:  # No units are specified, but preserve_worksheet_units is True
+                    units = previous_units
+
+            rows, cols = _array_check(matrix_array)
+            temp_matrix = self.ws_object.CreateMatrix(rows, cols)
+            for row in range(rows):
+                for col in range(cols):
+                    value = matrix_array[row][col]
+                    try:
+                        temp_matrix.SetMatrixElement(row, col, value)
+                    except:
+                        raise ValueError(f"Error setting matrix element {row},{col}: {value}")
+
+            error = self.ws_object.SetMatrixValue(str(input_alias), temp_matrix, str(units))
+            # error = self.ws_object.SetRealValue(str(input_alias),
+            #                                     matrix_array, str(units))
+            # COM command returns error count. error = 0 -> everything set correctly
+
         else:
-            raise ValueError(f"{input_alias} is not a designated input field" +
-                             f"\n\nAvailable Input fields:\n{self.inputs()}")
+            raise ValueError(f"{input_alias} is not a designated input field")
         if error > 0:
             print(f"\nWarning!\nerror setting '{input_alias}' value/units\n")
         return error
+
+    def PauseCalculation(self):
+        """ Pauses worksheet calculation - may speed up routines the set many input values """
+        self.ws_object.PauseCalculation()
+
+    def ResumeCalculation(self):
+        """ Pauses worksheet calculation """
+        self.ws_object.ResumeCalculation()
 
     def syncronize(self):
+        """ Syncronises worksheet """  # TODO I have no idea what synchronising is...
         self.ws_object.Synchronize()
 
 
-class Matrix():
-    """ Mathcad Matrix object container """
-    def __init__(self, python_name=""):
-        self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
-        for i in range(self.__mcadapp.Worksheets.Count):
-            if self.__mcadapp.Worksheets.Item(i).Name == self.__mcadapp.ActiveWorksheet.Name:
-                self.__ws = self.__mcadapp.Worksheets.Item(i)  # Returns IMathcadPrimeWorksheet2 object
-                break
-        self.python_name = python_name  # Just for organisation in scripts
-        self.object = None
-        self.shape = None
+def _matrix_to_array(mathcad_matrix_obj) -> list:
+    """ converts a COM matrix object to a list of lists (row = sub list, column = value) """
 
-    def create_matrix(self, rows, columns):
-        """ Creates a Mathcad matrix """
-        try:
-            rows, columns = int(rows), int(columns)
-            self.shape = (rows, columns)
-            self.object = self.__ws.CreateMatrix(rows, columns)
-            return True
-        except ValueError:
-            raise ValueError("Matrix dimensions must be integers")
-        except:
-            raise Exception("COM Error creating Mathcad matrix")
+    rows = int(mathcad_matrix_obj.Rows)
+    print(f"rows: {rows}")
+    cols = int(mathcad_matrix_obj.Columns)
+    print(f"cols: {cols}")
+    matrix = []
+    for row in range(rows):
+        row_list = [mathcad_matrix_obj.GetMatrixElement(row, col) for col in range(cols)]
+        matrix.append(row_list)
+    return matrix
 
-    def set_element(self, row_index, column_index, value):
-        """ Sets the value of an element in the Matrix """
-        if self.object is not None:
-            try:
-                row, col = int(row_index), int(column_index)
-                print(self.object)
-                self.object.SetMatrixElement(row, col, value)  # @FIXME
-            except ValueError:
-                raise ValueError("Matrix maths can only use numerical values")
-#            except:
-#                raise Exception("COM Error setting element value")  # Hidden for above @FIXME
-        else:
-            raise TypeError("Matrix must first be created")
 
-    def get_element(self, row_index, column_index):
-        """ Fetches the value of an element in the Matrix """
-        if self.object is not None:
-            try:
-                row, col = int(row_index), int(column_index)
-                self.object.GetMatrixElement(row, col)
-            except ValueError:
-                raise ValueError("Matrix maths can only use numerical values")
-            except:
-                raise Exception("COM Error fetching element value")
-        else:
-            raise TypeError("Matrix must first be created")
-
-    def numpy_array_as_matrix(self, numpy_array):
-        """ Takes a numpy array, creates a matrix, and populates the values """
-        if isinstance(numpy_array, np.ndarray):
-            height, width = numpy_array.shape  # Get array dimensions
-            matrix = self.create_matrix(width, height)
-            if matrix is True:
-                for r, row in enumerate(numpy_array):
-                    for c, value in enumerate(row):
-                        self.set_element(r, c, value)
-        else:
-            raise TypeError("Argument is not a Numpy array")
+def _array_check(matrix_array: list):
+    """ A helper function to validate that the array input is suitable to be sent to Mathcad """
+    rows = len(matrix_array)
+    previous_cols = 0
+    for i, row_list in enumerate(matrix_array):
+        cols = len(row_list)
+        if i != 0:
+            if cols != previous_cols:  # check that every row has the same number of columns
+                raise ValueError("Inconsistent number of columns in input matrix")
+        previous_cols = cols
+    return rows, cols
