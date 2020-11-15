@@ -9,8 +9,12 @@ A Python wrapper for the Mathcad Prime automation API
 MathcadPy is a python wrapper for the Mathcad Prime COM automation API. This allows a python script to interact with a Mathcad session, select worksheets that are already open or open worksheets from files, and send values to designated inputs and fetch them from designated outputs. The python script also has access to the worksheet units, and can even demand results in different units to those specified in a worksheet (e.g. calculation may output a value in meters, but the script wants the value in inches).
 
 ### Usage
+Install using
+
     pip install MathcadPy
-(TODO - See examples.py for some simple function examples including matrix operations)
+ 
+See [documentation/Getting_Started.md](https://github.com/MattWoodhead/MathcadPy/blob/master/documentation/Getting_Started.md) to get up and running with MathcadPy.
+See examples.py for some simple function examples including matrix operations.
 
 ### Todo
 - [ ] Wiki documenting the functions
