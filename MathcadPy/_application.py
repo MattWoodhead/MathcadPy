@@ -89,6 +89,14 @@ class Mathcad():
             print("incorrect save argument specified")
         self._list_worksheets()
 
+    def quit(self, save_option="Discard"):
+        if save_option in ["Discard", 2]:  # check for both "Discard" and its COM api equivalent code
+            self.__mcadapp.Quit(2)
+        elif save_option in ["Prompt", 1]:
+            self.__mcadapp.Quit(1)
+        elif save_option in ["Save", 0]:
+            self.__mcadapp.Quit(0)
+
 
 class Worksheet():
     """ Mathcad Worksheet object
