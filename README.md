@@ -1,4 +1,8 @@
 # MathcadPy
+
+
+[![Downloads](https://img.shields.io/pypi/v/MathcadPy.svg)](https://pypi.org/project/MathcadPy/)  [![Downloads](https://pepy.tech/badge/mathcadpy)](https://pepy.tech/project/mathcadpy)
+
 A Python wrapper for the Mathcad Prime automation API
 
 ### Requirements
