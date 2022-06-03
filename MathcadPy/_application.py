@@ -3,7 +3,8 @@
 _application.py
 ~~~~~~~~~~~~~~
 MathcadPy
-Copyright 2020 Matt Woodhead
+https://github.com/MattWoodhead/MathcadPy
+Copyright 2022 Matt Woodhead
 """
 
 from pathlib import Path
