@@ -19,3 +19,16 @@ mathcad_worksheet = mathcad_app.open(Path.cwd() / "simple_example_complete.mcdx"
 print(mathcad_worksheet.inputs())
 
 print(mathcad_worksheet.outputs())
+
+print(f"Old input value: {mathcad_worksheet.get_input('input_1')}")  # only here for debugging
+mathcad_worksheet.set_real_input("input_1", 2)  # change the value in Mathcad programmatically
+print(f"New input value: {mathcad_worksheet.get_input('input_1')}")  # only here for debugging
+
+mathcad_worksheet.set_real_input("input_2", 4)  # change the value in Mathcad programmatically
+
+
+value, units, error_code = mathcad_worksheet.get_real_output("output")
+if error_code == 0:  # Good practice to check for errors when you retreive a value
+    print(value, units)
+else:
+    raise ValueError
