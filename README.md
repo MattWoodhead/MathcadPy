@@ -3,7 +3,7 @@
 
 [![Downloads](https://img.shields.io/pypi/v/MathcadPy.svg)](https://pypi.org/project/MathcadPy/)  [![Downloads](https://pepy.tech/badge/mathcadpy)](https://pepy.tech/project/mathcadpy)
 
-A Python wrapper for the Mathcad Prime automation API
+A Python wrapper for the Mathcad Prime automation API.  See [the Wiki](https://github.com/MattWoodhead/MathcadPy/wiki/0.-Home) for the module documentation.
 
 ### Requirements
 - [Mathcad Prime 3+](https://www.mathcad.com/)
@@ -15,12 +15,9 @@ MathcadPy is a python wrapper for the Mathcad Prime COM automation API. This all
 ### Usage
 Install using: `pip install MathcadPy`
  
-See [documentation/Getting_Started.md](https://github.com/MattWoodhead/MathcadPy/blob/master/documentation/Getting_Started.md) to get up and running with MathcadPy.
+See [the Wiki](https://github.com/MattWoodhead/MathcadPy/wiki/0.-Home) for the module documentation.
 
 See examples.py for some simple function examples including matrix operations.
-
-### Todo
-- [ ] Wiki documenting the functions
 
 ### licensing and credits
 Author: Matt Woodhead

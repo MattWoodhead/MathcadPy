@@ -3,21 +3,36 @@
 _application.py
 ~~~~~~~~~~~~~~
 MathcadPy
-Copyright 2020 Matt Woodhead
+https://github.com/MattWoodhead/MathcadPy
+Copyright 2022 Matt Woodhead
 """
 
 from pathlib import Path
 import win32com.client as w32c
 
 
+
+__MATHCAD_VERSION_INT = 0
+
+def _set_mathcad_version(version_string):
+    global __MATHCAD_VERSION_INT
+    __MATHCAD_VERSION_INT = int(version_string[0])
+
+def _get_mathcad_version():
+    global __MATHCAD_VERSION_INT
+    return __MATHCAD_VERSION_INT
+
+
+
 class Mathcad():
     """ Mathcad application object """
 
     def __init__(self, visible=True):
-        print("Loading Mathcad")
+        #print("Loading Mathcad")
         try:
             self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
             self.version = self.__mcadapp.GetVersion()  # Fetches Mathcad version
+            _set_mathcad_version(self.version)
             self.open_worksheets = {}
             if visible is False:
                 self.__mcadapp.Visible = False
@@ -134,17 +149,16 @@ class Worksheet():
 
     def save_as(self, new_filepath: Path):
         """ Saves the worksheet under a new filename """
-        try:
-            new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
-            if new_filepath.suffix == ".mcdx":
+        new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
+        if (new_filepath.suffix.lower() == ".pdf"):
+            if _get_mathcad_version() > 7:
                 self.ws_object.SaveAs(new_filepath)
-                return True
-                print(f"Worksheet saved as: {new_filepath}")
             else:
-                raise ValueError("Filename must include file extension '.mcdx'")
-        except:
-            print("COM error saving new version")
-        return False
+                raise ValueError("Mathcad Prime 8 or newer is required to export as PDF")
+        elif new_filepath.suffix.lower() == ".mcdx":
+            self.ws_object.SaveAs(new_filepath)
+        else:
+            raise ValueError("Filename must include file extension '.mcdx' or '.pdf'")
 
     def name(self):
         """ Returns the filename of the Worksheet object """
@@ -338,9 +352,9 @@ def _matrix_to_array(mathcad_matrix_obj) -> list:
     """ converts a COM matrix object to a list of lists (row = sub list, column = value) """
 
     rows = int(mathcad_matrix_obj.Rows)
-    print(f"rows: {rows}")
+    #print(f"rows: {rows}")
     cols = int(mathcad_matrix_obj.Columns)
-    print(f"cols: {cols}")
+    #print(f"cols: {cols}")
     matrix = []
     for row in range(rows):
         row_list = [mathcad_matrix_obj.GetMatrixElement(row, col) for col in range(cols)]
