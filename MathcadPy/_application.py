@@ -248,6 +248,28 @@ class Worksheet():
         else:
             raise ValueError(f"{output_alias} is not a designated output field")
 
+    def _get_output(self, output_alias):
+        """ Gets the value from a designated output in the worksheet """
+        assert isinstance(output_alias, str)
+        if output_alias in self.outputs():
+            try:
+                result = self.ws_object.OutputGetValue(output_alias)
+                result_type = result.ResultType
+                if result_type == 1:  # ValueResultTypes_Real
+                    return result.RealResult, result.Units, result.ErrorCode
+                elif result_type == 2:  # ValueResultTypes_String
+                    return result.StringResult, result.Units, result.ErrorCode
+                elif result_type == 3:  # ValueResultTypes_Matrix
+                    return _matrix_to_array(result.MatrixResult), result.Units, result.ErrorCode
+                else:
+                    return None, None, None
+
+                return result.RealResult, result.Units, result.ErrorCode
+            except:
+                print("COM Error fetching real_output")  # TODO - replace with raised exception
+        else:
+            raise ValueError(f"{output_alias} is not a designated output field")
+
     def get_matrix_output(self, output_alias, units="Default"):
         """ Gets the numerical value from a designated output in the worksheet """
         assert isinstance(output_alias, str)
