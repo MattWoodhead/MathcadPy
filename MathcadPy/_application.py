@@ -4,7 +4,7 @@ _application.py
 ~~~~~~~~~~~~~~
 MathcadPy
 https://github.com/MattWoodhead/MathcadPy
-Copyright 2022 Matt Woodhead
+Copyright 2023 Matt Woodhead
 """
 
 from pathlib import Path
@@ -12,27 +12,17 @@ import win32com.client as w32c
 
 
 
-__MATHCAD_VERSION_INT = 0
-
-def _set_mathcad_version(version_string):
-    global __MATHCAD_VERSION_INT
-    __MATHCAD_VERSION_INT = int(version_string[0])
-
-def _get_mathcad_version():
-    global __MATHCAD_VERSION_INT
-    return __MATHCAD_VERSION_INT
-
-
-
 class Mathcad():
     """ Mathcad application object """
+
+    _version_int = 0  # class variable for the Mathcad version
 
     def __init__(self, visible=True):
         #print("Loading Mathcad")
         try:
             self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
+
             self.version = self.__mcadapp.GetVersion()  # Fetches Mathcad version
-            _set_mathcad_version(self.version)
             self.open_worksheets = {}
             if visible is False:
                 self.__mcadapp.Visible = False
@@ -53,8 +43,15 @@ class Mathcad():
         """ Activate the Mathcad window. If visible, this maximises Mathcad"""
         self.__mcadapp.Activate()
 
+    def get_version(self):
+        """ Fetches the version string from the attached MathCAD instance """
+        self.version = self.__mcadapp.GetVersion()  # update the class variables
+        Mathcad._version_int = int(self.version[0])
+        return self.version  # return the version string to the function caller
+
     def active_sheet(self):
         """ Returns the active worksheet name """
+        # TODO - should this be changed to return a sheet object?
         name = self.__mcadapp.ActiveWorksheet.Name
         if name == "":
             return None  # Returns none if the current worksheet not saved
@@ -80,21 +77,21 @@ class Mathcad():
             filepath = Path(filepath)
             if filepath.exists() and (filepath.suffix.lower() == ".mcdx"):
                 local_obj = self.__mcadapp.Open(str(filepath))
-                # now we have opened a new worksheet, generate the list of open worksheets from the COM API
+                # now we have opened a new worksheet, generate the list of open sheets from the API
                 local_worksheets = {}
-                for i in range(self.__mcadapp.Worksheets.Count):  # a for loop because the Mathcad API is shit
+                for i in range(self.__mcadapp.Worksheets.Count):  # a loop because the Mathcad API is shit
                     sheet_object = self.__mcadapp.Worksheets.item(i)
                     local_worksheets[sheet_object.Name] = sheet_object# this is necessary because the open method only returns a basic IMathcadPrimeWorksheet object
                 self.open_worksheets[local_obj.Name] = Worksheet(local_worksheets[local_obj.Name])  # add the worksheet into the open worksheets dictionary
                 return self.open_worksheets[local_obj.Name]  # return the worksheet object
             else:
                 raise ValueError("The provided path is not a Mathcad Prime file")
-        except TypeError:
-            raise TypeError("filepath expects a string or pathlib object")
+        except TypeError as exc:
+            raise TypeError("filepath expects a string or pathlib object") from exc
 
     def close_all(self, save_option="Discard"):
         """ Closes all worksheets. Can specify save options before closing """
-        if save_option in ["Discard", 2]:  # check for both "Discard" and its COM api equivalent code
+        if save_option in ["Discard", 2]:  # check for both "Discard" and its COM equivalent enum
             self.__mcadapp.CloseAll(2)
         elif save_option in ["Prompt", 1]:
             self.__mcadapp.CloseAll(1)
@@ -105,7 +102,11 @@ class Mathcad():
         self._list_worksheets()
 
     def quit(self, save_option="Discard"):
-        if save_option in ["Discard", 2]:  # check for both "Discard" and its COM api equivalent code
+        """
+        Closes all worksheets and closes the MathCAD instance.
+        Can specify save options before closing
+        """
+        if save_option in ["Discard", 2]:  # check for both "Discard" and its COM equivalent enum
             self.__mcadapp.Quit(2)
         elif save_option in ["Prompt", 1]:
             self.__mcadapp.Quit(1)
@@ -150,8 +151,9 @@ class Worksheet():
     def save_as(self, new_filepath: Path):
         """ Saves the worksheet under a new filename """
         new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
-        if (new_filepath.suffix.lower() == ".pdf"):
-            if _get_mathcad_version() > 7:
+        if new_filepath.suffix.lower() == ".pdf":
+            if Mathcad._version_int > 7:
+            #if _get_mathcad_version() > 7:
                 self.ws_object.SaveAs(new_filepath)
             else:
                 raise ValueError("Mathcad Prime 8 or newer is required to export as PDF")
@@ -226,7 +228,7 @@ class Worksheet():
         _outputs = []
         for i in range(self.ws_object.Outputs.Count):
             _outputs.append(self.ws_object.Outputs.GetAliasByIndex(i))
-        return _outputs  # Returns a list of open worksheet filenames
+        return _outputs  # Returns a list of output aliases
 
     def get_real_output(self, output_alias, units="Default"):
         """ Gets the numerical value from a designated output in the worksheet """
@@ -273,8 +275,8 @@ class Worksheet():
                 if units:  # If units is not equal to ""
                     try:
                         assert units == previous_units
-                    except AssertionError:
-                        raise AssertionError("preserve_worksheet_units is True. The units argument does not equate to the units present in the Worksheet")
+                    except AssertionError as exc:
+                        raise AssertionError("preserve_worksheet_units is True. The units argument does not equate to the units present in the Worksheet") from exc
                 else:  # No units are specified, but preserve_worksheet_units is True
                     units = previous_units
             error = self.ws_object.SetRealValue(input_alias, value, units)
@@ -309,8 +311,8 @@ class Worksheet():
                 if units:  # If units is not equal to ""
                     try:
                         assert units == previous_units
-                    except AssertionError:
-                        raise AssertionError("preserve_worksheet_units is True. The units argument does not equate to the units present in the Worksheet")
+                    except AssertionError as exc:
+                        raise AssertionError("preserve_worksheet_units is True. The units argument does not equate to the units present in the Worksheet") from exc
                 else:  # No units are specified, but preserve_worksheet_units is True
                     units = previous_units
 
@@ -321,8 +323,8 @@ class Worksheet():
                     value = matrix_array[row][col]
                     try:
                         temp_matrix.SetMatrixElement(row, col, value)
-                    except:
-                        raise ValueError(f"Error setting matrix element {row},{col}: {value}")
+                    except exc:
+                        raise ValueError(f"Error setting matrix element {row},{col}: {value}") from exc
 
             error = self.ws_object.SetMatrixValue(str(input_alias), temp_matrix, str(units))
             # error = self.ws_object.SetRealValue(str(input_alias),
@@ -335,16 +337,22 @@ class Worksheet():
             print(f"\nWarning!\nerror setting '{input_alias}' value/units\n")
         return error
 
-    def PauseCalculation(self):
+    def PauseCalculation(self):  # todo - duplicate of pause_calculation
         """ Pauses worksheet calculation - may speed up routines the set many input values """
+        print("Warning: the PauseCalculation method will be removed in a future version - use pause_calculation instead")
         self.ws_object.PauseCalculation()
 
-    def ResumeCalculation(self):
+    def ResumeCalculation(self):  # todo - duplicate of resume_calculation
         """ Pauses worksheet calculation """
+        print("Warning: the ResumeCalculation method will be removed in a future version - use resume_calculation instead")
         self.ws_object.ResumeCalculation()
 
     def syncronize(self):
-        """ Syncronises worksheet """  # TODO I have no idea what synchronising is...
+        """ Syncronises (i.e. re-calculates) worksheet """
+        self.ws_object.Synchronize()
+
+    def calculate(self):
+        """ Syncronises (i.e. re-calculates) worksheet """
         self.ws_object.Synchronize()
 
 
@@ -352,9 +360,9 @@ def _matrix_to_array(mathcad_matrix_obj) -> list:
     """ converts a COM matrix object to a list of lists (row = sub list, column = value) """
 
     rows = int(mathcad_matrix_obj.Rows)
-    #print(f"rows: {rows}")
+    # print(f"rows: {rows}")
     cols = int(mathcad_matrix_obj.Columns)
-    #print(f"cols: {cols}")
+    # print(f"cols: {cols}")
     matrix = []
     for row in range(rows):
         row_list = [mathcad_matrix_obj.GetMatrixElement(row, col) for col in range(cols)]
@@ -373,3 +381,10 @@ def _array_check(matrix_array: list):
                 raise ValueError("Inconsistent number of columns in input matrix")
         previous_cols = cols
     return rows, cols
+
+
+if __name__ == "__main__":
+
+    mc = Mathcad()
+    print(mc.get_version())
+    print(Mathcad._version_int)

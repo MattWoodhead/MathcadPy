@@ -8,3 +8,4 @@ build
 dist
 MathcadPy.egg-info
 COM_Info
+Test/units_test.py
