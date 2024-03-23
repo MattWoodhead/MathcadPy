@@ -36,6 +36,11 @@ class Mathcad:
             except:
                 raise pythoncom.com_error from pcoe
 
+    def __getattribute__(*args):
+        """ Used to allow access to hidden attributes of class instances """
+        # https://docs.python.org/3/reference/datamodel.html#special-method-lookup
+        return object.__getattribute__(*args)
+
     def _list_worksheets(self):
         """lists worksheets open in the Mathcad instance"""
         ws_list = {}
@@ -233,7 +238,7 @@ class Worksheet:
         """Fetches the curent value of a specific input"""
         if input_alias in self.inputs():
             getinput = self.ws_object.InputGetMatrixValue(input_alias)
-            return _matrix_to_array(getinput.RealResult), getinput.Units, getinput.ErrorCode
+            return _matrix_to_array(getinput.MatrixResult), getinput.Units, getinput.ErrorCode
         # else
         raise ValueError(f"{input_alias} is not a designated input field")
 
