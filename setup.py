@@ -3,7 +3,7 @@
 setup.py
 ~~~~~~~~~~~~~~
 MathcadPy
-Copyright 2023 Matt Woodhead
+Copyright 2024 Matt Woodhead
 """
 
 from pathlib import Path
@@ -40,7 +40,7 @@ setup(
         'console_scripts': ['py-package-template=py_pkg.entry_points:main'],
     },
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3.6',
         'Environment :: Win32 (MS Windows)',
