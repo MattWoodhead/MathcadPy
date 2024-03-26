@@ -3,7 +3,7 @@
 setup.py
 ~~~~~~~~~~~~~~
 MathcadPy
-Copyright 2020 Matt Woodhead
+Copyright 2024 Matt Woodhead
 """
 
 from pathlib import Path
@@ -32,7 +32,7 @@ setup(
     url=about['__url__'],
     packages=['MathcadPy'],
     include_package_data=True,
-    python_requires=">=3.6.*",
+    python_requires=">=3.6",
     install_requires=['pywin32'],
     license=about['__license__'],
     zip_safe=False,
@@ -40,7 +40,7 @@ setup(
         'console_scripts': ['py-package-template=py_pkg.entry_points:main'],
     },
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3.6',
         'Environment :: Win32 (MS Windows)',
