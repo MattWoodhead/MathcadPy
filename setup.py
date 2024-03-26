@@ -32,7 +32,7 @@ setup(
     url=about['__url__'],
     packages=['MathcadPy'],
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">3.5",
     install_requires=['pywin32'],
     license=about['__license__'],
     zip_safe=False,
