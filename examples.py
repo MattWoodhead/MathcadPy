@@ -54,6 +54,22 @@ if error_code == 0:  # Good practice to check for errors when you request specif
 matrix, units, error = test_ws.get_matrix_output("matrix_output_test")
 print(matrix, units)
 
-# Save the worksheet under a new filename and then close it
-test_ws.save_as(Path.cwd() / "Test" / "test_output.mcdx")
+# Save the worksheet under new filenames, and then close it
+try:
+    print("Trying to save MCDX")
+    test_ws.save_as(Path.cwd() / "Test" / "test_output.mcdx")
+
+    print("Trying to save RTF")
+    test_ws.save_as(Path.cwd() / "Test" / "test_output.rtf")
+
+    print("Trying to save XPS")
+    test_ws.save_as(Path.cwd() / "Test" / "test_output.xps")
+
+    if mathcad_app.version_major_int > 4:
+        print("Trying to save PDF")
+        test_ws.save_as(Path.cwd() / "Test" / "test_output.xps")
+except Exception as exc:
+    print(exc)
+    pass
+
 test_ws.close()

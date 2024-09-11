@@ -22,7 +22,10 @@ class Mathcad:
         try:
             self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
 
-            self.version = self.__mcadapp.GetVersion()  # Fetches Mathcad version
+            self.version = "0"
+            self.version_major_int = 0
+            self.get_version()  # Fetches Mathcad version and updates the above two variables
+
             self.open_worksheets = {}
             if visible is False:
                 self.__mcadapp.Visible = False
@@ -36,17 +39,17 @@ class Mathcad:
             except:
                 raise pythoncom.com_error from pcoe
 
-    def __getattribute__(*args):
-        """ Used to allow access to hidden attributes of class instances """
-        # https://docs.python.org/3/reference/datamodel.html#special-method-lookup
-        return object.__getattribute__(*args)
+    # def __getattribute__(self, *args):
+    #     """ Used to allow access to hidden attributes of class instances """
+    #     # https://docs.python.org/3/reference/datamodel.html#special-method-lookup
+    #     return object.__getattribute__(*args)
 
     def _list_worksheets(self):
         """lists worksheets open in the Mathcad instance"""
         ws_list = {}
         for i in range(self.__mcadapp.Worksheets.Count):
             ws_list[self.__mcadapp.Worksheets.Item(i).Name] = Worksheet(
-                self.__mcadapp.Worksheets.Item(i)
+                self.__mcadapp.Worksheets.Item(i), self,
             )  # {name: ws_object}
         self.open_worksheets = ws_list
 
@@ -57,7 +60,7 @@ class Mathcad:
     def get_version(self):
         """Fetches the version string from the attached MathCAD instance"""
         self.version = self.__mcadapp.GetVersion()  # update the class variables
-        Mathcad._version_int = int(self.version[0])
+        self.version_major_int = int(self.version.split(".")[0])
         return self.version  # return the version string to the function caller
 
     def active_sheet(self):
@@ -101,7 +104,7 @@ class Mathcad:
                 local_worksheets[sheet_object.Name] = sheet_object
 
             # add the worksheet into the open worksheets dictionary
-            self.open_worksheets[local_obj.Name] = Worksheet(local_worksheets[local_obj.Name])
+            self.open_worksheets[local_obj.Name] = Worksheet(local_worksheets[local_obj.Name], self)
             return self.open_worksheets[local_obj.Name]  # return the worksheet object
 
         except TypeError as exc:
@@ -146,8 +149,9 @@ class Worksheet:
     open_sheet_name argument can be used
     """
 
-    def __init__(self, _worksheet_COM_object=None):
+    def __init__(self, _worksheet_COM_object=None, _application_class=None):
         self.ws_object = _worksheet_COM_object
+        self._app_class = _application_class
         # try:
         self.__repr__ = self.ws_object.FullName
         # except:
@@ -176,15 +180,19 @@ class Worksheet:
         """Saves the worksheet under a new filename"""
         new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
         if new_filepath.suffix.lower() == ".pdf":
-            if Mathcad._version_int > 7:
+            if self._app_class.version_major_int > 4:
                 # if _get_mathcad_version() > 7:
-                self.ws_object.SaveAs(new_filepath)
+                ret_val = self.ws_object.SaveAs(new_filepath)
+                print(ret_val)
             else:
                 raise ValueError("Mathcad Prime 8 or newer is required to export as PDF")
-        elif new_filepath.suffix.lower() == ".mcdx":
+        elif new_filepath.suffix.lower() in [".mcdx", ".rtf", ".xps"]:
             self.ws_object.SaveAs(new_filepath)
         else:
-            raise ValueError("Filename must include file extension '.mcdx' or '.pdf'")
+            raise ValueError(
+                "Filename must include one of the following file extensions: "
+                "'.mcdx', '.pdf', '.rtf', '.xps'"
+            )
 
     def name(self):
         """Returns the filename of the Worksheet object"""
@@ -489,4 +497,4 @@ class MathcadComError(Exception):
 if __name__ == "__main__":
     mc = Mathcad()
     print(mc.get_version())
-    print(Mathcad._version_int)
+    print(mc.version_major_int)
