@@ -49,5 +49,12 @@ if error_code == 0:  # Good practice to check for errors when you retreive a val
 else:
     raise ValueError
 
+# fetch the output value now we have changed the inputs
+value, units, error_code = mathcad_worksheet.get_matrix_output("output_2")
+if error_code == 0:  # Good practice to check for errors when you retreive a value
+    print(f"Output value: {value} {units}")
+else:
+    raise ValueError(error_code)
+
 mathcad_worksheet.save_as(Path.cwd() / "matrix_example_output.mcdx")
 mathcad_app.quit()

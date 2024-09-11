@@ -217,11 +217,22 @@ class Worksheet:
             _inputs.append(self.ws_object.Inputs.GetAliasByIndex(i))
         return _inputs
 
-    def get_input(
-        self, input_alias
-    ):  # TODO possibly rename this to get_real_input to match COM? Check behaviour on string inputs
+    def get_input(self, input_alias):
         """Fetches the curent value of a specific input"""
         if input_alias in self.inputs():
+            try:
+                result = self.ws_object.InputGetValue(input_alias)
+                result_type = result.ResultType
+                if result_type == 1:  # ValueResultTypes_Real
+                    return result.RealResult, result.Units, result.ErrorCode
+                if result_type == 2:  # ValueResultTypes_String
+                    return result.StringResult, result.Units, result.ErrorCode
+                if result_type == 3:  # ValueResultTypes_Matrix
+                    return _matrix_to_array(result.MatrixResult), result.Units, result.ErrorCode
+                # else
+                return None, None, None
+            except pythoncom.com_error as pcoe:
+                raise MathcadComError("COM Error fetching real_output") from pcoe
             getinput = self.ws_object.InputGetRealValue(input_alias)
             return getinput.RealResult, getinput.Units, getinput.ErrorCode
         # else
@@ -273,7 +284,7 @@ class Worksheet:
         else:
             raise ValueError(f"{output_alias} is not a designated output field")
 
-    def _get_output(self, output_alias):
+    def get_output(self, output_alias):
         """Gets the value from a designated output in the worksheet"""
         assert isinstance(output_alias, str)
         if output_alias in self.outputs():
@@ -293,6 +304,11 @@ class Worksheet:
         else:
             raise ValueError(f"'{output_alias}' is not a designated output field")
 
+    def _get_output(self, output_alias):
+        """DEPRECATED: Gets the value from a designated output in the worksheet"""
+        # TODO - add deprecation notice
+        return self.get_output(output_alias)
+
     def get_matrix_output(self, output_alias, units="Default"):
         """Gets the numerical value from a designated output in the worksheet"""
         assert isinstance(output_alias, str)
@@ -303,9 +319,10 @@ class Worksheet:
                     result = self.ws_object.OutputGetMatrixValue(output_alias)
                 else:
                     result = self.ws_object.OutputGetMatrixValueAs(output_alias, units)
-                return _matrix_to_array(result.MatrixResult), result.Units, result.ErrorCode
+                    print(dir(result))
+                return _matrix_to_array(result.MatrixResult), None, result.ErrorCode
             except pythoncom.com_error as pcoe:
-                raise MathcadComError("COM Error fetching real_output") from pcoe
+                raise MathcadComError("COM Error fetching matrix output") from pcoe
         else:
             raise ValueError(f"{output_alias} is not a designated output field")
 
@@ -391,7 +408,7 @@ class Worksheet:
         return error
 
     def PauseCalculation(self):  # todo - duplicate of pause_calculation
-        """Pauses worksheet calculation - may speed up routines the set many input values"""
+        """DEPRECATED: Pauses worksheet calculation - may speed up routines the set many input values"""
         print(
             "Warning: the PauseCalculation method will be removed in a future version "
             "- use pause_calculation instead"
@@ -399,7 +416,7 @@ class Worksheet:
         self.ws_object.PauseCalculation()
 
     def ResumeCalculation(self):  # todo - duplicate of resume_calculation
-        """Pauses worksheet calculation"""
+        """DEPRECATED: Pauses worksheet calculation"""
         print(
             "Warning: the ResumeCalculation method will be removed in a future version "
             "- use resume_calculation instead"
