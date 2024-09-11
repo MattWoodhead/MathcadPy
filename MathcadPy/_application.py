@@ -39,10 +39,10 @@ class Mathcad:
             except:
                 raise pythoncom.com_error from pcoe
 
-    # def __getattribute__(self, *args):
-    #     """ Used to allow access to hidden attributes of class instances """
-    #     # https://docs.python.org/3/reference/datamodel.html#special-method-lookup
-    #     return object.__getattribute__(*args)
+    def __getattribute__(self, *args):
+        """ Used to allow access to hidden attributes of class instances """
+        # https://docs.python.org/3/reference/datamodel.html#special-method-lookup
+        return object.__getattribute__(self, *args)
 
     def _list_worksheets(self):
         """lists worksheets open in the Mathcad instance"""
@@ -181,7 +181,7 @@ class Worksheet:
         new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
         if new_filepath.suffix.lower() == ".pdf":
             if self._app_class.version_major_int > 4:
-                # if _get_mathcad_version() > 7:
+                # some versions of Mathcad Prime 5 had PDF export. 6 onwards had the functionality officially.
                 self.ws_object.SaveAs(new_filepath)
             else:
                 raise ValueError("Mathcad Prime 8 or newer is required to export as PDF")
