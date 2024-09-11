@@ -67,7 +67,7 @@ try:
 
     if mathcad_app.version_major_int > 4:
         print("Trying to save PDF")
-        test_ws.save_as(Path.cwd() / "Test" / "test_output.xps")
+        test_ws.save_as(Path.cwd() / "Test" / "test_output.pdf")
 except Exception as exc:
     print(exc)
     pass

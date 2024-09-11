@@ -182,8 +182,7 @@ class Worksheet:
         if new_filepath.suffix.lower() == ".pdf":
             if self._app_class.version_major_int > 4:
                 # if _get_mathcad_version() > 7:
-                ret_val = self.ws_object.SaveAs(new_filepath)
-                print(ret_val)
+                self.ws_object.SaveAs(new_filepath)
             else:
                 raise ValueError("Mathcad Prime 8 or newer is required to export as PDF")
         elif new_filepath.suffix.lower() in [".mcdx", ".rtf", ".xps"]:
