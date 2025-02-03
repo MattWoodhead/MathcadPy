@@ -3,7 +3,7 @@
 util.py
 ~~~~~~~~~~~~~~
 MathcadPy
-Copyright 2023 Matt Woodhead
+Copyright 2025 Matt Woodhead
 """
 
 import subprocess

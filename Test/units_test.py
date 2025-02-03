@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-examples.py
+units_test.py
 ~~~~~~~~~~~~~~
 MathcadPy
-Copyright 2020 Matt Woodhead
+Copyright 2024 Matt Woodhead
 """
 
 from pprint import pprint

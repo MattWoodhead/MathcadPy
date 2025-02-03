@@ -4,7 +4,7 @@ _application.py
 ~~~~~~~~~~~~~~
 MathcadPy
 https://github.com/MattWoodhead/MathcadPy
-Copyright 2023 Matt Woodhead
+Copyright 2025 Matt Woodhead
 """
 
 from pathlib import Path
@@ -22,7 +22,10 @@ class Mathcad:
         try:
             self.__mcadapp = w32c.Dispatch("MathcadPrime.Application")
 
-            self.version = self.__mcadapp.GetVersion()  # Fetches Mathcad version
+            self.version = "0"
+            self.version_major_int = 0
+            self.get_version()  # Fetches Mathcad version and updates the above two variables
+
             self.open_worksheets = {}
             if visible is False:
                 self.__mcadapp.Visible = False
@@ -36,17 +39,17 @@ class Mathcad:
             except:
                 raise pythoncom.com_error from pcoe
 
-    def __getattribute__(*args):
+    def __getattribute__(self, *args):
         """ Used to allow access to hidden attributes of class instances """
         # https://docs.python.org/3/reference/datamodel.html#special-method-lookup
-        return object.__getattribute__(*args)
+        return object.__getattribute__(self, *args)
 
     def _list_worksheets(self):
         """lists worksheets open in the Mathcad instance"""
         ws_list = {}
         for i in range(self.__mcadapp.Worksheets.Count):
             ws_list[self.__mcadapp.Worksheets.Item(i).Name] = Worksheet(
-                self.__mcadapp.Worksheets.Item(i)
+                self.__mcadapp.Worksheets.Item(i), self,
             )  # {name: ws_object}
         self.open_worksheets = ws_list
 
@@ -57,7 +60,7 @@ class Mathcad:
     def get_version(self):
         """Fetches the version string from the attached MathCAD instance"""
         self.version = self.__mcadapp.GetVersion()  # update the class variables
-        Mathcad._version_int = int(self.version[0])
+        self.version_major_int = int(self.version.split(".")[0])
         return self.version  # return the version string to the function caller
 
     def active_sheet(self):
@@ -101,7 +104,7 @@ class Mathcad:
                 local_worksheets[sheet_object.Name] = sheet_object
 
             # add the worksheet into the open worksheets dictionary
-            self.open_worksheets[local_obj.Name] = Worksheet(local_worksheets[local_obj.Name])
+            self.open_worksheets[local_obj.Name] = Worksheet(local_worksheets[local_obj.Name], self)
             return self.open_worksheets[local_obj.Name]  # return the worksheet object
 
         except TypeError as exc:
@@ -146,8 +149,9 @@ class Worksheet:
     open_sheet_name argument can be used
     """
 
-    def __init__(self, _worksheet_COM_object=None):
+    def __init__(self, _worksheet_COM_object=None, _application_class=None):
         self.ws_object = _worksheet_COM_object
+        self._app_class = _application_class
         # try:
         self.__repr__ = self.ws_object.FullName
         # except:
@@ -176,15 +180,18 @@ class Worksheet:
         """Saves the worksheet under a new filename"""
         new_filepath = Path(new_filepath)  # Cast to Path object incase they have used a string
         if new_filepath.suffix.lower() == ".pdf":
-            if Mathcad._version_int > 7:
-                # if _get_mathcad_version() > 7:
+            if self._app_class.version_major_int > 4:
+                # some versions of Mathcad Prime 5 had PDF export. 6 onwards had the functionality officially.
                 self.ws_object.SaveAs(new_filepath)
             else:
                 raise ValueError("Mathcad Prime 8 or newer is required to export as PDF")
-        elif new_filepath.suffix.lower() == ".mcdx":
+        elif new_filepath.suffix.lower() in [".mcdx", ".rtf", ".xps"]:
             self.ws_object.SaveAs(new_filepath)
         else:
-            raise ValueError("Filename must include file extension '.mcdx' or '.pdf'")
+            raise ValueError(
+                "Filename must include one of the following file extensions: "
+                "'.mcdx', '.pdf', '.rtf', '.xps'"
+            )
 
     def name(self):
         """Returns the filename of the Worksheet object"""
@@ -217,11 +224,22 @@ class Worksheet:
             _inputs.append(self.ws_object.Inputs.GetAliasByIndex(i))
         return _inputs
 
-    def get_input(
-        self, input_alias
-    ):  # TODO possibly rename this to get_real_input to match COM? Check behaviour on string inputs
+    def get_input(self, input_alias):
         """Fetches the curent value of a specific input"""
         if input_alias in self.inputs():
+            try:
+                result = self.ws_object.InputGetValue(input_alias)
+                result_type = result.ResultType
+                if result_type == 1:  # ValueResultTypes_Real
+                    return result.RealResult, result.Units, result.ErrorCode
+                if result_type == 2:  # ValueResultTypes_String
+                    return result.StringResult, result.Units, result.ErrorCode
+                if result_type == 3:  # ValueResultTypes_Matrix
+                    return _matrix_to_array(result.MatrixResult), result.Units, result.ErrorCode
+                # else
+                return None, None, None
+            except pythoncom.com_error as pcoe:
+                raise MathcadComError("COM Error fetching real_output") from pcoe
             getinput = self.ws_object.InputGetRealValue(input_alias)
             return getinput.RealResult, getinput.Units, getinput.ErrorCode
         # else
@@ -273,7 +291,7 @@ class Worksheet:
         else:
             raise ValueError(f"{output_alias} is not a designated output field")
 
-    def _get_output(self, output_alias):
+    def get_output(self, output_alias):
         """Gets the value from a designated output in the worksheet"""
         assert isinstance(output_alias, str)
         if output_alias in self.outputs():
@@ -293,6 +311,11 @@ class Worksheet:
         else:
             raise ValueError(f"'{output_alias}' is not a designated output field")
 
+    def _get_output(self, output_alias):
+        """DEPRECATED: Gets the value from a designated output in the worksheet"""
+        # TODO - add deprecation notice
+        return self.get_output(output_alias)
+
     def get_matrix_output(self, output_alias, units="Default"):
         """Gets the numerical value from a designated output in the worksheet"""
         assert isinstance(output_alias, str)
@@ -303,9 +326,10 @@ class Worksheet:
                     result = self.ws_object.OutputGetMatrixValue(output_alias)
                 else:
                     result = self.ws_object.OutputGetMatrixValueAs(output_alias, units)
-                return _matrix_to_array(result.MatrixResult), result.Units, result.ErrorCode
+                    print(dir(result))
+                return _matrix_to_array(result.MatrixResult), None, result.ErrorCode
             except pythoncom.com_error as pcoe:
-                raise MathcadComError("COM Error fetching real_output") from pcoe
+                raise MathcadComError("COM Error fetching matrix output") from pcoe
         else:
             raise ValueError(f"{output_alias} is not a designated output field")
 
@@ -391,7 +415,7 @@ class Worksheet:
         return error
 
     def PauseCalculation(self):  # todo - duplicate of pause_calculation
-        """Pauses worksheet calculation - may speed up routines the set many input values"""
+        """DEPRECATED: Pauses worksheet calculation - may speed up routines the set many input values"""
         print(
             "Warning: the PauseCalculation method will be removed in a future version "
             "- use pause_calculation instead"
@@ -399,7 +423,7 @@ class Worksheet:
         self.ws_object.PauseCalculation()
 
     def ResumeCalculation(self):  # todo - duplicate of resume_calculation
-        """Pauses worksheet calculation"""
+        """DEPRECATED: Pauses worksheet calculation"""
         print(
             "Warning: the ResumeCalculation method will be removed in a future version "
             "- use resume_calculation instead"
@@ -472,4 +496,4 @@ class MathcadComError(Exception):
 if __name__ == "__main__":
     mc = Mathcad()
     print(mc.get_version())
-    print(Mathcad._version_int)
+    print(mc.version_major_int)
