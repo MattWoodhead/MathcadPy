@@ -5,7 +5,7 @@ __init__.py
 MathcadPy
 https://github.com/MattWoodhead/MathcadPy
 
-Copyright 2023 Matt Woodhead
+Copyright 2025 Matt Woodhead
 
 Requirements:
 

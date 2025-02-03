@@ -4,7 +4,7 @@ _application.py
 ~~~~~~~~~~~~~~
 MathcadPy
 https://github.com/MattWoodhead/MathcadPy
-Copyright 2023 Matt Woodhead
+Copyright 2025 Matt Woodhead
 """
 
 from pathlib import Path
