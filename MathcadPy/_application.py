@@ -88,7 +88,7 @@ class Mathcad:
     def open(self, filepath: Path):
         """Opens the filepath (if valid) in Mathcad"""
         try:
-            filepath = Path(filepath)
+            filepath = Path(filepath).resolve()
             if not filepath.exists():
                 raise FileNotFoundError()
             if filepath.suffix.lower() != ".mcdx":
