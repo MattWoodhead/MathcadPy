@@ -10,7 +10,7 @@ Copyright 2025 Matt Woodhead
 
 __title__ = 'MathcadPy'
 __description__ = 'A Python wrapper for the Mathcad Prime COM API'
-__version__ = '0.5'
+__version__ = '0.5.1'
 __author__ = 'Matt Woodhead'
 __author_email__ = 'ol9pzgqux@mozmail.com'
 __license__ = 'GNU GPL v3.0'
